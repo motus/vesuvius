@@ -11,8 +11,8 @@ import numpy as np
 def _main():
 
     parser = argparse.ArgumentParser(description="Build or edit a curve.")
-    parser.add_argument('image', help='Path to the input image file.')
     parser.add_argument('curve', help='Path to output curve file (JSON).')
+    parser.add_argument('image', help='Path to the input image file.')
 
     args = parser.parse_args()
 
@@ -45,8 +45,6 @@ def _main():
     with open(args.curve, 'w') as f:
         json.dump(points, f)
 
-    print(_curve_pixels(img, points))
-
     pygame.quit()
 
 
@@ -71,19 +69,6 @@ def _curve(screen, points):
         if pt_prev:
             pygame.draw.line(screen, _COLOR, pt_prev, pt, _LINE_WIDTH)
         pt_prev = pt
-
-
-def _curve_pixels(img, points):
-    res = []
-    if len(points) < 2:
-        return res
-    pt_prev = points[0]
-    for pt in points[1:]:
-        seg_len = np.linalg.norm(np.array(pt) - pt_prev)
-        for coord_xy in np.linspace(pt_prev, pt, int(seg_len), dtype=int):
-            res.append(img.get_at(coord_xy)[0] / 255.0)
-        pt_prev = pt
-    return res
 
 
 if __name__ == "__main__":
