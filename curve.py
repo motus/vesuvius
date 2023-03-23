@@ -5,6 +5,7 @@ import json
 import argparse
 
 import pygame
+import numpy as np
 
 
 def _main():
@@ -41,21 +42,22 @@ def _main():
 
         pygame.display.flip()
 
-    print(points)
     with open(args.curve, 'w') as f:
         json.dump(points, f)
+
+    print(_curve_pixels(img, points))
 
     pygame.quit()
 
 
-_COLOR = pygame.Color(255, 0, 0, a=127)
+_COLOR = pygame.Color(255, 0, 0)
 _PT_RADIUS = 5
 _LINE_WIDTH = 2
 
 
 def _update(points, pt_new):
     for i, pt in enumerate(points):
-        if (pt[0] - pt_new[0]) ** 2 + (pt[1] - pt_new[1]) ** 2 < _PT_RADIUS:
+        if np.linalg.norm(np.array(pt) - pt_new) <= _PT_RADIUS:
             del points[i]
             return
     points.append(pt_new)
@@ -69,6 +71,19 @@ def _curve(screen, points):
         if pt_prev:
             pygame.draw.line(screen, _COLOR, pt_prev, pt, _LINE_WIDTH)
         pt_prev = pt
+
+
+def _curve_pixels(img, points):
+    res = []
+    if len(points) < 2:
+        return res
+    pt_prev = points[0]
+    for pt in points[1:]:
+        seg_len = np.linalg.norm(np.array(pt) - pt_prev)
+        for coord_xy in np.linspace(pt_prev, pt, int(seg_len), dtype=int):
+            res.append(img.get_at(coord_xy)[0] / 255.0)
+        pt_prev = pt
+    return res
 
 
 if __name__ == "__main__":
